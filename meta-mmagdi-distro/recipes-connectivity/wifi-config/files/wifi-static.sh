@@ -2,10 +2,10 @@
 # Configure WiFi with static IP on wlan0
 
 CONF="/etc/wpa_supplicant/wpa_supplicant.conf"
-IP="192.168.245.250"
+IP="192.168.1.250"
 NETMASK="255.255.255.0"
-GATEWAY="192.168.245.195"
-DNS="192.168.245.195"
+GATEWAY="192.168.1.1"
+DNS="192.168.1.1"
 
 
 echo "[*] Starting wpa_supplicant"

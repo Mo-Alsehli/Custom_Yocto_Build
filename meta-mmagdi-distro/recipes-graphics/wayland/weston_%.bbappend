@@ -17,4 +17,4 @@ do_install:append() {
 
 FILES:${PN} += "${systemd_system_unitdir}/weston-rdp.service"
 SYSTEMD_SERVICE:${PN} = "weston-rdp.service"
-SYSTEMD_AUTO_ENABLE = "enable"
+#SYSTEMD_AUTO_ENABLE = "enable"
