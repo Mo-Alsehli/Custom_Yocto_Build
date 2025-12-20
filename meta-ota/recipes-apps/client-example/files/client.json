@@ -1,0 +1,24 @@
+{
+    "unicast" : "192.168.10.2",
+
+    "logging" : {
+        "level" : "debug",
+        "console" : "true"
+    },
+
+    "applications" : [
+        {
+            "name" : "Hello",
+            "id" : "0x1313"
+        }
+    ],
+
+    "routing" : "Hello",
+
+    "service-discovery" : {
+        "enable" : "true",
+        "multicast" : "224.224.224.245",
+        "port" : "30490",
+        "protocol" : "udp"
+    }
+}
