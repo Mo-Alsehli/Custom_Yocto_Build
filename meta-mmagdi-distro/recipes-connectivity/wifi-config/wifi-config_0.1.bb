@@ -27,7 +27,7 @@ do_install() {
 }
 
 FILES:${PN} += " \
-    ${sysconfdir}/wpa_supplicant/wpa_supplicant.conf \
+    ${sysconfdir}/wpa_supplicant/wpa_supplicant.conf\ 
     ${bindir}/wifi-static.sh \
     ${systemd_system_unitdir}/wifi-static.service \
 "

@@ -4,7 +4,7 @@ After=systemd-user-sessions.service getty@tty1.service
 Conflicts=weston.service
 
 [Service]
-# Run as root (change if you have a non-root user configured)
+# Run as root (change if you have a non-root use rconfigured)
 User=root
 
 # Environment variables for Weston runtime
@@ -15,8 +15,7 @@ Environment=WAYLAND_DISPLAY=wayland-0
 ExecStart=/usr/bin/weston \
     --backend=rdp-backend.so \
     --rdp-tls-cert=/etc/freerdp/keys/server.crt \
-    --rdp-tls-key=/etc/freerdp/keys/server.key \
-    --no-clients-resize
+    --rdp-tls-key=/etc/freerdp/keys/server.key
 
 Restart=always
 RestartSec=2
