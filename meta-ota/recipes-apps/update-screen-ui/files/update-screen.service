@@ -1,0 +1,33 @@
+[Unit]
+Description=Updated V2 Qt Application
+After=weston.service systemd-user-sessions.service
+Requires=weston.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+
+# Run as root for PoC
+User=weston
+
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=QT_QPA_PLATFORM=wayland
+Environment=QT_WAYLAND_SHELL_INTEGRATION=xdg-shell
+
+# Force software rendering
+Environment=QT_QUICK_BACKEND=software
+Environment=LIBGL_ALWAYS_SOFTWARE=1
+
+Environment=WAYLAND_DISPLAY=wayland-1
+
+
+
+ExecStart=/usr/bin/appsystem_updated_screen
+
+
+Environment=QT_QUICK_BACKEND=software
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=graphical.target

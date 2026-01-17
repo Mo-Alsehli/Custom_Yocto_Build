@@ -1,0 +1,22 @@
+From e2b4ac70773b593761269c57139983fb8f2b1063 Mon Sep 17 00:00:00 2001
+From: Mo-Alsehli <mohamed.m.alsehli@gmail.com>
+Date: Wed, 14 Jan 2026 13:17:22 +0200
+Subject: [PATCH] fixed typo bug
+
+---
+ backend/src/OtaBackend.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/backend/src/OtaBackend.h b/backend/src/OtaBackend.h
+index 206fbf4..e787aca 100644
+--- a/backend/src/OtaBackend.h
++++ b/backend/src/OtaBackend.h
+@@ -84,7 +84,7 @@ class OtaBackend {
+                  bool lastChunk);
+ 
+     void pollSystemInfoOnce();
+-    static bool readProcStatCpu(uint64_t& idl e, uint64_t& total);
++    static bool readProcStatCpu(uint64_t& idle, uint64_t& total);
+     static bool readProcMeminfo(uint64_t& memTotalBytes, uint64_t& memAvailBytes);
+     static bool readStorageStatvfs(const std::string& path,
+                                   uint64_t& totalBytes,

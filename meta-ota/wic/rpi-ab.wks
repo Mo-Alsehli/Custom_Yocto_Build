@@ -1,0 +1,11 @@
+# boot (FAT32) - contains U-Boot artifacts, kernel, dtb, extlinux.conf
+part /boot --source bootimg-partition --ondisk mmcblk0 --fstype=vfat --label boot --active --align 4 --size 256
+
+# rootfsA - filled from Yocto rootfs
+part / --source rootfs --ondisk mmcblk0 --fstype=ext4 --label rootfsA --align 4 --size 4096
+
+# rootfsB - empty ext4 partition (will be written by OTA later)
+part / --ondisk mmcblk0 --fstype=ext4 --label rootfsB --align 4 --size 6144
+
+# optional persistent data partition
+part /data --ondisk mmcblk0 --fstype=ext4 --label data --align 4 --size 512

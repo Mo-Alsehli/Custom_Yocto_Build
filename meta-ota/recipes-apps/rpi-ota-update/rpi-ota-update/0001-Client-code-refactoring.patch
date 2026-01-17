@@ -1,0 +1,109 @@
+From 7301b1257e6a99189d1f72d304af9bc9e50e977c Mon Sep 17 00:00:00 2001
+From: Mo-Alsehli <mohamed.m.alsehli@gmail.com>
+Date: Wed, 7 Jan 2026 15:52:23 +0200
+Subject: [PATCH] Client code refactoring
+
+---
+ OtaController.cpp              | 19 +++++++++++++++++++
+ OtaController.h                |  3 +++
+ backend/src/OtaBackend.cpp     |  4 ++--
+ backend/src/OtaBackend.h       |  2 +-
+ cards/CardDownloadFinished.qml |  2 +-
+ 5 files changed, 26 insertions(+), 4 deletions(-)
+
+diff --git a/OtaController.cpp b/OtaController.cpp
+index 30c5801..371cb32 100644
+--- a/OtaController.cpp
++++ b/OtaController.cpp
+@@ -346,3 +346,22 @@ void OtaController::startDownload() {
+                 // Success: keep busy=true until finished/error callback clears it.
+     });
+ }
++
++void OtaController::applyUpdate() {
++    const QString imagePath = "/data/updates/rootfs.ext4";
++
++    // verify file exists
++    if(!QFile::exists(imagePath)){
++        emit errorOccurred("Update image not found");
++        return;
++    }
++
++    bool applySuccess = true;
++
++    if(!applySuccess){
++        emit errorOccurred("Faild to apply update");
++        return;
++    }
++
++    QProcess::startDetached("systemctl", { "reboot" });
++}
+diff --git a/OtaController.h b/OtaController.h
+index 0e328de..22e5382 100644
+--- a/OtaController.h
++++ b/OtaController.h
+@@ -12,6 +12,8 @@
+ #include <QDebug>
+ #include <chrono>
+ #include <QMetaObject>
++#include <QProcess>
++
+ 
+ 
+ 
+@@ -71,6 +73,7 @@ class OtaController : public QObject {
+     Q_INVOKABLE void initialize();
+     Q_INVOKABLE void checkForUpdate();
+     Q_INVOKABLE void startDownload();
++    Q_INVOKABLE void applyUpdate();
+ 
+    signals:
+     void progressChanged(int percent);
+diff --git a/backend/src/OtaBackend.cpp b/backend/src/OtaBackend.cpp
+index fbcfbe6..55f198f 100644
+--- a/backend/src/OtaBackend.cpp
++++ b/backend/src/OtaBackend.cpp
+@@ -160,7 +160,7 @@ bool OtaBackend::init() {
+         using clock = std::chrono::steady_clock;
+         auto nextPoll = clock::now();
+ 
+-        const auto pollInterval = std::chrono::seconds(1);
++        const auto pollInterval = std::chrono::seconds(3);
+ 
+         while (running_) {
+             const auto now = clock::now();
+@@ -169,7 +169,7 @@ bool OtaBackend::init() {
+                 pollSystemInfoOnce();
+                 nextPoll = now + pollInterval;
+             }
+-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
++            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+         }
+         std::cout << "[Backend] Event loop thread stopped\n";
+     });
+diff --git a/backend/src/OtaBackend.h b/backend/src/OtaBackend.h
+index 3987336..36d32fe 100644
+--- a/backend/src/OtaBackend.h
++++ b/backend/src/OtaBackend.h
+@@ -16,7 +16,7 @@
+ #include <mutex>
+ #include <ctime>
+ 
+-#define UBUNTU_PLATFORM 1
++#define UBUNTU_PLATFORM 0
+ 
+ #if UBUNTU_PLATFORM == 1
+     #define OTA_ROOT "/home/mmagdi/workspace/QT6_Projects/qnxOta/"
+diff --git a/cards/CardDownloadFinished.qml b/cards/CardDownloadFinished.qml
+index 3931b20..42cbabb 100644
+--- a/cards/CardDownloadFinished.qml
++++ b/cards/CardDownloadFinished.qml
+@@ -55,7 +55,7 @@ Rectangle {
+             btnColor: down ? "#aa2e00" :
+                      (hovered ? "#ff6420" : "#ff4500")
+ 
+-            onClicked: finishedCard.applyUpdate()
++            onClicked: otaController.applyUpdate()
+         }
+ 
+         // Secondary button: Return to Dashboard

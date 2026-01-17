@@ -1,0 +1,36 @@
+[Unit]
+Description=OTA Qt GUI
+After=network.target weston.service
+Wants=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+
+# Run as root for PoC
+User=root
+
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=QT_QPA_PLATFORM=wayland
+#Environment=QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+Environment=QT_WAYLAND_SHELL_INTEGRATION=xdg-shell
+
+# Force software rendering
+Environment=QT_QUICK_BACKEND=software
+Environment=LIBGL_ALWAYS_SOFTWARE=1
+
+Environment=WAYLAND_DISPLAY=wayland-1
+
+
+
+ExecStart=/usr/bin/appqnxOta
+
+Environment=COMMONAPI_CONFIG=/home/root/rpi-update-ota/commonapi.ini
+Environment=VSOMEIP_CONFIGURATION=/home/root/rpi-update-ota/vsomeip.json
+
+Environment=QT_QUICK_BACKEND=software
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=graphical.target

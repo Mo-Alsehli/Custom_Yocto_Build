@@ -5,7 +5,7 @@ PACKAGECONFIG:append = " rdp"
 
 SRC_URI:append = " file://weston-rdp.service"
 
-inherit systemd
+#inherit systemd
 
 do_install:append() {
     install -d ${D}${systemd_system_unitdir}

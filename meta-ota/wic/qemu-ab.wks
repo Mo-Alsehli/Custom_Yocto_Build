@@ -1,0 +1,11 @@
+# Boot partition - U-Boot, kernel, extlinux
+part /boot --source bootimg-partition --fstype=vfat --label boot --active --align 4 --size 512
+
+# rootfsA - primary rootfs
+part / --source rootfs --fstype=ext4 --label rootfsA --align 4 --size 4096
+
+# rootfsB - OTA target
+part --fstype=ext4 --label rootfsB --align 4 --size 4096
+
+# Data partition
+part --fstype=ext4 --label data --align 4 --size 1024

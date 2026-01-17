@@ -1,0 +1,108 @@
+From d0169b629146dfd257176aa7a80cd7bb6f0b4e30 Mon Sep 17 00:00:00 2001
+From: Mo-Alsehli <mohamed.m.alsehli@gmail.com>
+Date: Mon, 12 Jan 2026 14:22:18 +0200
+Subject: [PATCH] Completed Update apply method
+
+---
+ OtaController.cpp        | 53 +++++++++++++++++++++++++++++++++++-----
+ backend/src/OtaBackend.h |  4 +--
+ 2 files changed, 49 insertions(+), 8 deletions(-)
+
+diff --git a/OtaController.cpp b/OtaController.cpp
+index 371cb32..36c5d2d 100644
+--- a/OtaController.cpp
++++ b/OtaController.cpp
+@@ -29,7 +29,7 @@ static bool readUint32FromFile(const QString& path, uint32_t& valueOut) {
+ 
+ OtaController::OtaController(QObject* parent)
+     : QObject(parent),
+-      backend_(std::make_unique<OtaBackend>("rpi4-update.wic")) {
++      backend_(std::make_unique<OtaBackend>("rootfs.ext4")) {
+ 
+     // ---- Backend → Qt bridge (progress + speed) ----
+     backend_->setProgressCallback([this](int percent) {
+@@ -348,20 +348,61 @@ void OtaController::startDownload() {
+ }
+ 
+ void OtaController::applyUpdate() {
++    runAsync([this]() {
+     const QString imagePath = "/data/updates/rootfs.ext4";
++    const QString otaApplyPath = "/usr/sbin/ota-apply";
+ 
+     // verify file exists
+     if(!QFile::exists(imagePath)){
+-        emit errorOccurred("Update image not found");
++        QMetaObject::invokeMethod(this, [this](){
++            emit errorOccurred("Update image not found");
++        }, Qt::QueuedConnection);
++        return;
++    }
++
++    if (!QFile::exists(otaApplyPath)) {
++        QMetaObject::invokeMethod(this, [this]() {
++            emit errorOccurred("ota-apply tool not found");
++        }, Qt::QueuedConnection);
+         return;
+     }
+ 
+-    bool applySuccess = true;
++    QProcess proc;
++    proc.setProgram(otaApplyPath);
++    proc.setArguments({"--image", imagePath});
++
++    proc.setProcessEnvironment(QProcessEnvironment::systemEnvironment());
+ 
+-    if(!applySuccess){
+-        emit errorOccurred("Faild to apply update");
++    proc.start();
++
++    if(!proc.waitForFinished(-1)){
++    QMetaObject::invokeMethod(this, [this](){
++            emit errorOccurred("ota-apply did not finish");
++        }, Qt::QueuedConnection);
+         return;
+     }
+ 
+-    QProcess::startDetached("systemctl", { "reboot" });
++    const int exitCode = proc.exitCode();
++    const QString stdoutOut = proc.readAllStandardOutput();
++    const QString stderrOut = proc.readAllStandardError();
++
++
++
++        if (exitCode != 0) {
++            QMetaObject::invokeMethod(this, [this, exitCode, stderrOut]() {
++                emit errorOccurred(
++                    QString("ota-apply failed (code %1): %2")
++                        .arg(exitCode)
++                        .arg(stderrOut)
++                );
++            }, Qt::QueuedConnection);
++            return;
++        }
++
++        // SUCCESS → reboot
++        QMetaObject::invokeMethod(this, [this]() {
++            QProcess::startDetached("systemctl", { "reboot" });
++        }, Qt::QueuedConnection);
++
++        });
+ }
+diff --git a/backend/src/OtaBackend.h b/backend/src/OtaBackend.h
+index 36d32fe..b6f4dcf 100644
+--- a/backend/src/OtaBackend.h
++++ b/backend/src/OtaBackend.h
+@@ -21,11 +21,11 @@
+ #if UBUNTU_PLATFORM == 1
+     #define OTA_ROOT "/home/mmagdi/workspace/QT6_Projects/qnxOta/"
+ #else
+-    #define OTA_ROOT "/home/root/rpi-update-ota/"
++    #define OTA_ROOT "/data/"
+ #endif
+ 
+ #define UPDATE_VERSION_PATH OTA_ROOT "update.version"
+-#define DATA_CLIENT_PATH OTA_ROOT "data/client/"
++#define DATA_CLIENT_PATH OTA_ROOT "updates/client/"
+ 
+ 
+ 

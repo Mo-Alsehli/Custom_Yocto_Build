@@ -53,6 +53,9 @@ class FileReceiver {
 };
 
 int main(int argc, char** argv) {
+    CommonAPI::CallStatus status;
+    bool accepted = false;
+
     if (argc != 2) {
         std::cerr << "Usage: FileTransferClient <filename>" << std::endl;
         return 1;
@@ -76,7 +79,7 @@ int main(int argc, char** argv) {
 
     FileReceiver receiver(outputFilename);
 
-     proxy->requestFile(outputFilename, status, accepted);
+    proxy->requestFile(outputFilename, status, accepted);
 
     std::cout << "[Client] requestFile status=" << static_cast<int>(status) << " accepted=" << accepted << std::endl;
 
@@ -94,11 +97,6 @@ int main(int argc, char** argv) {
 
     proxy->getFileChunkEvent().subscribe(
         [&](const uint32_t& index, const CommonAPI::ByteBuffer& data, const bool& last) { receiver.onChunk(index, data, last); });
-
-    CommonAPI::CallStatus status;
-    bool accepted = false;
-
-   
 
     while (true) std::this_thread::sleep_for(std::chrono::seconds(1));
 }
